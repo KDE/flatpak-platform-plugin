@@ -34,12 +34,8 @@
 
 const char *QFlatpakPlatformTheme::name = "flatpak";
 
-Q_LOGGING_CATEGORY(QFlatpakPlatform, "qt.qpa.qflatpakplatform")
-
 QFlatpakPlatformTheme::QFlatpakPlatformTheme()
 {
-    qCDebug(QFlatpakPlatform) << "Initialize QFlatpakPlatform";
-
     loadSettings();
 }
 
@@ -74,7 +70,6 @@ const QFont *QFlatpakPlatformTheme::font(Font type) const
 
 bool QFlatpakPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
 {
-    qCDebug(QFlatpakPlatform) << "Use native platform dialog: " << type;
     switch (type) {
     case FileDialog:
         return true;
@@ -85,8 +80,6 @@ bool QFlatpakPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType t
 
 QPlatformDialogHelper *QFlatpakPlatformTheme::createPlatformDialogHelper(QPlatformTheme::DialogType type) const
 {
-    qCDebug(QFlatpakPlatform) << "Create platform dialog helper: " << type;
-
     switch (type) {
     case FileDialog:
         return new QFlatpakFileDialog;

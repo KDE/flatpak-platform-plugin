@@ -30,13 +30,15 @@
 
 #include <KColorScheme>
 
-Q_LOGGING_CATEGORY(QQFlatpakPlatform, "qt.qpa.qflatpakplatform")
+Q_LOGGING_CATEGORY(QFlatpakPlatform, "qt.qpa.qflatpakplatform")
 
 QFlatpakHintsSettings::QFlatpakHintsSettings()
     : QObject(0)
     , m_palette(nullptr)
 {
     m_desktopName = qgetenv("XDG_CURRENT_DESKTOP");
+
+    qCDebug(QFlatpakPlatform) << "XDG_CURRENT_DESKTOP: " << m_desktopName;
 
     // Use default configuration
     if (m_desktopName == QLatin1String("gnome")) {
