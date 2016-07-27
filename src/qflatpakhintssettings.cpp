@@ -52,8 +52,7 @@ QFlatpakHintsSettings::QFlatpakHintsSettings()
 
         QStringList styleNames;
         styleNames << QStringLiteral("adwaita")
-                // Avoid using gtk+ style as it uses gtk2 and we use gtk3 which is causing a crash
-                // << QStringLiteral("gtk+")
+                << QStringLiteral("gtk+")
                 << QStringLiteral("fusion")
                 << QStringLiteral("windows");
         m_hints[QPlatformTheme::StyleNames] = styleNames;
