@@ -25,16 +25,29 @@
 #include <QtGui/QPalette>
 #include <qpa/qplatformtheme.h>
 
+#include "qflatpakhintssettings.h"
+
 class QFlatpakPlatformTheme : public QPlatformTheme
 {
 public:
     QFlatpakPlatformTheme();
     ~QFlatpakPlatformTheme();
 
+    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const Q_DECL_OVERRIDE;
+    QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const Q_DECL_OVERRIDE;
+    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
+
     bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
 
     static const char *name;
+private:
+    void loadSettings();
+
+    QFlatpakHintsSettings *m_hints;
+
 };
 
 #endif // QFLATPAK_PLATFORM_THEME_H

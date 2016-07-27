@@ -21,6 +21,7 @@ include_directories(
 # install(TARGETS libqflatpak DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins/platforms)
 
 set(qflatpak_platform_theme_SRCS
+    qflatpakhintssettings.cpp
     qflatpakfiledialog.cpp
     qflatpakplatformtheme.cpp
     platformplugin.cpp
@@ -33,6 +34,9 @@ target_link_libraries(libqflatpakplatform
         Qt5::Core
         Qt5::DBus
         Qt5::Gui
+        KF5::ConfigWidgets
+        KF5::ConfigCore
+        KF5::I18n
 )
 
 install(TARGETS libqflatpakplatform DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/platformthemes)
