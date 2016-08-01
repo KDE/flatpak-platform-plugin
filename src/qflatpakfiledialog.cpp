@@ -19,7 +19,6 @@
  */
 
 #include "qflatpakfiledialog.h"
-#include "qflatpakglobal.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>

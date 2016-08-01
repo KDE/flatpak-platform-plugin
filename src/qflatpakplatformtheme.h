@@ -23,9 +23,8 @@
 
 #include <QtCore/QHash>
 #include <QtGui/QPalette>
-#include <qpa/qplatformtheme.h>
 
-#include "qflatpakhintssettings.h"
+#include <qpa/qplatformtheme.h>
 
 class QFlatpakPlatformTheme : public QPlatformTheme
 {
@@ -44,9 +43,7 @@ public:
 
     static const char *name;
 private:
-    void loadSettings();
-
-    QFlatpakHintsSettings *m_hints;
+    QPlatformTheme *m_platformTheme;
 
 };
 
