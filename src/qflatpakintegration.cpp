@@ -20,6 +20,7 @@
 
 #include "qflatpakintegration.h"
 #include "qflatpakplatformtheme.h"
+#include "qflatpakservices.h"
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
@@ -124,7 +125,7 @@ QPlatformInputContext *QFlatpakIntegration::inputContext() const
 
 QPlatformServices *QFlatpakIntegration::services() const
 {
-    return m_platformIntegration->services();
+    return new QFlatpakServices;
 }
 
 Qt::KeyboardModifiers QFlatpakIntegration::queryKeyboardModifiers() const

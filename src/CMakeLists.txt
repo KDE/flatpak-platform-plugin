@@ -8,6 +8,7 @@ set(qflatpak_platform_plugin_SRCS
     qflatpakfiledialog.cpp
     qflatpakmain.cpp
     qflatpakplatformtheme.cpp
+    qflatpakservices.cpp
 )
 
 add_library(libqflatpakplatform MODULE ${qflatpak_platform_plugin_SRCS})
