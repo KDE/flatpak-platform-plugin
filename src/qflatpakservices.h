@@ -30,8 +30,6 @@ public:
     bool openUrl(const QUrl &url);
     bool openDocument(const QUrl &url);
 
-// private Q_SLOTS:
-//     void gotResponse(uint response, const QVariantMap &results);
 };
 
 #endif // QFLATPAK_SERVICES_H
