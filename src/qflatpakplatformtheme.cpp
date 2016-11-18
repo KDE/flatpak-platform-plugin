@@ -39,25 +39,24 @@ QFlatpakPlatformTheme::QFlatpakPlatformTheme()
     const QString realPlatformTheme = qgetenv("QT_FLATPAK_REAL_PLATFORM_THEME");
 
     // TODO: not a nice solution, but the only one working
-    // TODO: add ifdef for Qt 5.7 as qLoadPlugin1 is deprecated there
 
     if (!realPlatformTheme.isEmpty()) {
-        m_platformTheme = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(loader(), realPlatformTheme, QStringList{realPlatformTheme});
+        m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), realPlatformTheme, QStringList{realPlatformTheme});
     } else {
         const QString desktopName = qgetenv("XDG_CURRENT_DESKTOP");
         if (desktopName == QLatin1String("gnome")) {
-            m_platformTheme = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("qgnomeplatform"), QStringList{"qgnomeplatform"});
+            m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("qgnomeplatform"), QStringList{"qgnomeplatform"});
 
             // prefer the GTK3 theme implementation with native dialogs etc.
             if (!m_platformTheme) {
-                m_platformTheme = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("gtk3"), QStringList{"gtk3"});
+                m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("gtk3"), QStringList{"gtk3"});
             }
             // fallback to the generic Gnome theme if loading the GTK3 theme fails
             if (!m_platformTheme) {
-                m_platformTheme = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("gnome"), QStringList{"gnome"});
+                m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("gnome"), QStringList{"gnome"});
             }
         } else if (desktopName == QLatin1String("KDE")) {
-            m_platformTheme = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("kde"), QStringList{"kde"});
+            m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("kde"), QStringList{"kde"});
         }
     }
 

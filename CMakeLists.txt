@@ -1,7 +1,7 @@
 project(flatpak-platform-plugin)
 
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
-set(QT_MIN_VERSION "5.4.0")
+set(QT_MIN_VERSION "5.7.0")
 
 ################# set KDE specific information #################
 

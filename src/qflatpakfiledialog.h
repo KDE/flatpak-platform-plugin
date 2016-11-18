@@ -23,11 +23,26 @@
 
 #include <QtCore/qeventloop.h>
 #include <qpa/qplatformdialoghelper.h>
+#include <QMetaType>
+#include <QWindow>
 
 class QFlatpakFileDialog : public QPlatformFileDialogHelper
 {
     Q_OBJECT
 public:
+    // Keep in sync with filechooser from xdg-desktop-portal-kde
+    typedef struct {
+        uint type;
+        QString filterString;
+    } Filter;
+    typedef QList<Filter> Filters;
+
+    typedef struct {
+        QString userVisibleName;
+        Filters filters;
+    } FilterList;
+    typedef QList<FilterList> FilterListList;
+
     QFlatpakFileDialog();
     ~QFlatpakFileDialog();
 
@@ -51,16 +66,18 @@ public Q_SLOTS:
     void gotResponse(uint response, const QVariantMap &results);
 
 private:
+    WId m_winId;
+    bool m_modal;
     bool m_multipleFiles;
     bool m_saveFile;
     QString m_acceptLabel;
     QString m_directory;
     QString m_filename;
     QString m_title;
+    QStringList m_nameFilters;
+    QStringList m_mimeTypesFilters;
     QStringList m_selectedFiles;
-    // TODO filters
 };
-
 
 #endif // QFLATPAK_FILEDIALOG_H
 

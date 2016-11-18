@@ -20,18 +20,70 @@
 
 #include "qflatpakfiledialog.h"
 
+#include <QtDBus/QtDBus>
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QDBusPendingCall>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 #include <QLoggingCategory>
-#include <QWindow>
+#include <QMimeType>
+#include <QMimeDatabase>
 
 Q_LOGGING_CATEGORY(QFlatpakPlatformFileDialog, "qt.qpa.qflatpakplatform.FileDialog")
 
+// Keep in sync with filechooser from xdg-desktop-portal-kde
+Q_DECLARE_METATYPE(QFlatpakFileDialog::Filter);
+Q_DECLARE_METATYPE(QFlatpakFileDialog::Filters);
+Q_DECLARE_METATYPE(QFlatpakFileDialog::FilterList);
+Q_DECLARE_METATYPE(QFlatpakFileDialog::FilterListList);
+
+QDBusArgument &operator << (QDBusArgument &arg, const QFlatpakFileDialog::Filter &filter)
+{
+    arg.beginStructure();
+    arg << filter.type << filter.filterString;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator >> (const QDBusArgument &arg, QFlatpakFileDialog::Filter &filter)
+{
+    uint type;
+    QString filterString;
+    arg.beginStructure();
+    arg >> type >> filterString;
+    filter.type = type;
+    filter.filterString = filterString;
+    arg.endStructure();
+
+    return arg;
+}
+
+QDBusArgument &operator << (QDBusArgument &arg, const QFlatpakFileDialog::FilterList &filterList)
+{
+    arg.beginStructure();
+    arg << filterList.userVisibleName << filterList.filters;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator >> (const QDBusArgument &arg, QFlatpakFileDialog::FilterList &filterList)
+{
+    QString userVisibleName;
+    QFlatpakFileDialog::Filters filters;
+    arg.beginStructure();
+    arg >> userVisibleName >> filters;
+    filterList.userVisibleName = userVisibleName;
+    filterList.filters = filters;
+    arg.endStructure();
+
+    return arg;
+}
+
 QFlatpakFileDialog::QFlatpakFileDialog()
     : QPlatformFileDialogHelper()
+    , m_winId(0)
+    , m_modal(false)
     , m_multipleFiles(false)
     , m_saveFile(false)
 {
@@ -43,6 +95,8 @@ QFlatpakFileDialog::~QFlatpakFileDialog()
 
 void QFlatpakFileDialog::initializeDialog()
 {
+    qCDebug(QFlatpakPlatformFileDialog) << "File dialog: initializeDialog()";
+
     if (options()->fileMode() == QFileDialogOptions::ExistingFiles) {
         m_multipleFiles = true;
     }
@@ -59,7 +113,24 @@ void QFlatpakFileDialog::initializeDialog()
         m_saveFile = true;
     }
 
+    if (!options()->nameFilters().isEmpty()) {
+        m_nameFilters = options()->nameFilters();
+    }
+
+    if (!options()->mimeTypeFilters().isEmpty()) {
+        m_mimeTypesFilters = options()->mimeTypeFilters();
+    }
+
     setDirectory(options()->initialDirectory());
+
+    qCDebug(QFlatpakPlatformFileDialog) << "Initial values: ";
+    qCDebug(QFlatpakPlatformFileDialog) << "       Multiple files: " << m_multipleFiles;
+    qCDebug(QFlatpakPlatformFileDialog) << "         Accept label: " << m_acceptLabel;
+    qCDebug(QFlatpakPlatformFileDialog) << "          Window title: " << m_title;
+    qCDebug(QFlatpakPlatformFileDialog) << "            Save/Open: " << (m_saveFile ? "Save" : "Open");
+    qCDebug(QFlatpakPlatformFileDialog) << "         Name filters: " << m_nameFilters;
+    qCDebug(QFlatpakPlatformFileDialog) << "    MimeTypes filters: " << m_mimeTypesFilters;
+    qCDebug(QFlatpakPlatformFileDialog) << "    Initial directory: " << m_directory;
 }
 
 void QFlatpakFileDialog::setDirectory(const QUrl &directory)
@@ -114,6 +185,108 @@ QString QFlatpakFileDialog::selectedNameFilter() const
 void QFlatpakFileDialog::exec()
 {
     qCDebug(QFlatpakPlatformFileDialog) << "File dialog: exec()";
+
+    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                                          QLatin1String("/org/freedesktop/portal/desktop"),
+                                                          QLatin1String("org.freedesktop.portal.FileChooser"),
+                                                          m_saveFile ? QLatin1String("SaveFile") : QLatin1String("OpenFile"));
+    QString parentWindowId = QLatin1String("x11:") + QString::number(m_winId);
+
+    QVariantMap options;
+    if (!m_acceptLabel.isEmpty()) {
+        options.insert(QLatin1String("accept_label"), m_acceptLabel);
+    }
+
+    options.insert(QLatin1String("modal"), m_modal);
+    options.insert(QLatin1String("multiple"), m_multipleFiles);
+
+    // Insert filters
+    qDBusRegisterMetaType<Filter>();
+    qDBusRegisterMetaType<Filters>();
+    qDBusRegisterMetaType<FilterList>();
+    qDBusRegisterMetaType<FilterListList>();
+
+    FilterListList filterList;
+
+    if (!m_mimeTypesFilters.isEmpty()) {
+        Q_FOREACH (const QString &filter, m_mimeTypesFilters) {
+            QMimeDatabase mimeDatabase;
+            QMimeType mimeType = mimeDatabase.mimeTypeForName(filter);
+
+            // Creates e.g. (1, "image/png")
+            Filter filterStruct;
+            filterStruct.type = 1; // MimeType
+            filterStruct.filterString = filter;
+
+            // Creates e.g. [((1, "image/png"))]
+            Filters filters;
+            filters << filterStruct;
+
+            // Creates e.g. [("Images", [((1, "image/png"))])]
+            FilterList filterListStruct;
+            filterListStruct.userVisibleName = mimeType.comment();
+            filterListStruct.filters = filters;
+
+            filterList << filterListStruct;
+        }
+    } else if (!m_nameFilters.isEmpty()) {
+        Q_FOREACH (const QString &filter, m_nameFilters) {
+            // Do parsing:
+            // Supported format is ("Images (*.png *.jpg)")
+            qCDebug(QFlatpakPlatformFileDialog) << "Testing filter: " << filter;
+            QRegExp regexp(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
+            if (regexp.indexIn(filter) >= 0) {
+                qCDebug(QFlatpakPlatformFileDialog) << filter << " passes";
+                QString userVisibleName = regexp.cap(1);
+                QStringList filterStrings = regexp.cap(2).split(QLatin1String(" "));
+
+                Filters filters;
+                Q_FOREACH (const QString &filterString, filterStrings) {
+                    Filter filterStruct;
+                    filterStruct.type = 0; // Global pattern
+                    filterStruct.filterString = filterString;
+                    filters << filterStruct;
+                }
+
+                FilterList filterListStruct;
+                filterListStruct.userVisibleName = userVisibleName;
+                filterListStruct.filters = filters;
+
+                filterList << filterListStruct;
+            }
+        }
+    }
+
+    if (!filterList.isEmpty()) {
+        options.insert(QLatin1String("filters"), QVariant::fromValue(filterList));
+    }
+
+    // TODO choices
+
+    message << parentWindowId << m_title << options;
+
+    QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
+    connect(watcher, &QDBusPendingCallWatcher::finished, [this] (QDBusPendingCallWatcher *watcher) {
+        QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+        if (reply.isError()) {
+            qCDebug(QFlatpakPlatformFileDialog) << "Couldn't get reply";
+            qCDebug(QFlatpakPlatformFileDialog) << "Error: " << reply.error().message();
+        } else {
+            QDBusConnection::sessionBus().connect(QString(),
+                                                  reply.value().path(),
+                                                  QLatin1String("org.freedesktop.portal.Request"),
+                                                  QLatin1String("Response"),
+                                                  this,
+                                                  SLOT(gotResponse(uint,QVariantMap)));
+        }
+    });
+
+    // HACK we have to avoid returning until we emit that the dialog was accepted or rejected
+    QEventLoop loop;
+    loop.connect(this, SIGNAL(accept()), SLOT(quit()));
+    loop.connect(this, SIGNAL(reject()), SLOT(quit()));
+    loop.exec();
 }
 
 void QFlatpakFileDialog::hide()
@@ -127,50 +300,28 @@ bool QFlatpakFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality wi
 
     qCDebug(QFlatpakPlatformFileDialog) << "File dialog: show()";
 
-    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
-                                                          QLatin1String("/org/freedesktop/portal/desktop"),
-                                                          QLatin1String("org.freedesktop.portal.FileChooser"),
-                                                          m_saveFile ? QLatin1String("SaveFile") : QLatin1String("OpenFile"));
-    QString parentWindowId = QLatin1String("x11:") + QString::number(parent->winId());
-    QVariantMap options;
-    if (!m_acceptLabel.isEmpty()) {
-        options.insert(QLatin1String("accept_label"), m_acceptLabel);
-    }
-    options.insert(QLatin1String("modal"), windowModality != Qt::NonModal);
-    options.insert(QLatin1String("multiple"), m_multipleFiles);
-    // TODO filters
-    // TODO choices
+    initializeDialog();
 
-    message << parentWindowId << m_title << options;
-
-    QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
-    connect(watcher, &QDBusPendingCallWatcher::finished, [this] (QDBusPendingCallWatcher *watcher) {
-        QDBusPendingReply<QDBusObjectPath> reply = *watcher;
-        if (reply.isError()) {
-            qCDebug(QFlatpakPlatformFileDialog) << "Couldn't get reply";
-        } else {
-            QDBusConnection::sessionBus().connect(QString(),
-                                                  reply.value().path(),
-                                                  QLatin1String("org.freedesktop.portal.Request"),
-                                                  QLatin1String("Response"),
-                                                  this,
-                                                  SLOT(gotResponse(uint,QVariantMap)));
-        }
-    });
+    m_modal = windowModality != Qt::NonModal;
+    m_winId = parent ? parent->winId() : 0;
 
     return true;
 }
 
 void QFlatpakFileDialog::gotResponse(uint response, const QVariantMap &results)
 {
+    qCDebug(QFlatpakPlatformFileDialog) << "File dialog: gotResponse()";
+
     if (!response) {
         if (results.contains(QLatin1String("uris"))) {
+            qCDebug(QFlatpakPlatformFileDialog) << results.value(QLatin1String("uris")).toStringList();
             m_selectedFiles = results.value(QLatin1String("uris")).toStringList();
         }
 
+        qCDebug(QFlatpakPlatformFileDialog) << "File dialog: gotResponse() - emit accept()";
         Q_EMIT accept();
+    } else {
+        qCDebug(QFlatpakPlatformFileDialog) << "File dialog: gotResponse() - emit reject()";
+        Q_EMIT reject();
     }
-
-    Q_EMIT reject();
 }
