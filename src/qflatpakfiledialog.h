@@ -72,7 +72,6 @@ private:
     bool m_saveFile;
     QString m_acceptLabel;
     QString m_directory;
-    QString m_filename;
     QString m_title;
     QStringList m_nameFilters;
     QStringList m_mimeTypesFilters;

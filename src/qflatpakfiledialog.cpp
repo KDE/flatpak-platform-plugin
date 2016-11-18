@@ -147,7 +147,8 @@ QUrl QFlatpakFileDialog::directory() const
 
 void QFlatpakFileDialog::selectFile(const QUrl &filename)
 {
-    m_filename = filename.toDisplayString();
+    qCDebug(QFlatpakPlatformFileDialog) << "File dialog: select(" << filename.toDisplayString() << ")";
+    m_selectedFiles << filename.toDisplayString();
 }
 
 QList<QUrl> QFlatpakFileDialog::selectedFiles() const
@@ -199,6 +200,16 @@ void QFlatpakFileDialog::exec()
 
     options.insert(QLatin1String("modal"), m_modal);
     options.insert(QLatin1String("multiple"), m_multipleFiles);
+
+    if (m_saveFile) {
+        if (!m_directory.isEmpty()) {
+            options.insert(QLatin1String("current_folder"), m_directory.toLatin1());
+        }
+
+        if (!m_selectedFiles.isEmpty()) {
+            options.insert(QLatin1String("current_file"), m_selectedFiles.first().toLatin1());
+        }
+    }
 
     // Insert filters
     qDBusRegisterMetaType<Filter>();
