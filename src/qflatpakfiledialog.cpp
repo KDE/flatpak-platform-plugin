@@ -233,10 +233,8 @@ void QFlatpakFileDialog::exec()
         Q_FOREACH (const QString &filter, m_nameFilters) {
             // Do parsing:
             // Supported format is ("Images (*.png *.jpg)")
-            qCDebug(QFlatpakPlatformFileDialog) << "Testing filter: " << filter;
             QRegExp regexp(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
             if (regexp.indexIn(filter) >= 0) {
-                qCDebug(QFlatpakPlatformFileDialog) << filter << " passes";
                 QString userVisibleName = regexp.cap(1);
                 QStringList filterStrings = regexp.cap(2).split(QLatin1String(" "));
 
