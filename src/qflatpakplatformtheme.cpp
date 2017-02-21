@@ -105,6 +105,13 @@ QPlatformDialogHelper *QFlatpakPlatformTheme::createPlatformDialogHelper(QPlatfo
     }
 }
 
+#ifndef QT_NO_SYSTEMTRAYICON
+QPlatformSystemTrayIcon * QFlatpakPlatformTheme::createPlatformSystemTrayIcon() const
+{
+    return m_platformTheme->createPlatformSystemTrayIcon();
+}
+#endif
+
 QList<QKeySequence> QFlatpakPlatformTheme::keyBindings(QKeySequence::StandardKey key) const
 {
     return m_platformTheme->keyBindings(key);

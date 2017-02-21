@@ -38,6 +38,10 @@ public:
     QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const Q_DECL_OVERRIDE;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
+#ifndef QT_NO_SYSTEMTRAYICON
+    virtual QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const;
+#endif
+
     bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
 
