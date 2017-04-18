@@ -149,7 +149,7 @@ QPlatformTheme *QFlatpakIntegration::createPlatformTheme(const QString &name) co
         return new QFlatpakPlatformTheme;
     }
 
-    return QPlatformIntegration::createPlatformTheme(name);
+    return m_platformIntegration->createPlatformTheme(name);
 }
 
 QVariant QFlatpakIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
