@@ -34,14 +34,19 @@ QFlatpakIntegration::QFlatpakIntegration(const QStringList &parameters, int &arg
     m_instance = this;
 
     const QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
-    const QString platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORM"));
+    // Use user defined platform plugin
+    QString platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORM"));
+    if (platformPlugin.isEmpty()) {
+        // Use system defined platform plugin
+        platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM"));
+    }
 
     if (!platformPlugin.isEmpty()) {
         m_platformIntegration = QPlatformIntegrationFactory::create(platformPlugin, parameters, argc, argv, platformPluginPath);
     } else {
         // Load xcb platform plugin by default
         m_platformIntegration = QPlatformIntegrationFactory::create(QLatin1String("xcb"), parameters, argc, argv, platformPluginPath);
-        // TODO: wayland
+        // TODO wayland by default when detected
     }
 }
 
