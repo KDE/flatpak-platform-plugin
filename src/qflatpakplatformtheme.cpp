@@ -27,6 +27,11 @@
 #include <qpa/qplatformthemefactory_p.h>
 #include <qpa/qplatformthemeplugin.h>
 #include <private/qfactoryloader_p.h>
+#if QT_VERSION < QT_VERSION_CHECK(5,8,0)
+#include <QtPlatformSupport/private/qgenericunixthemes_p.h>
+#else
+#include <QtThemeSupport/private/qgenericunixthemes_p.h>
+#endif
 
 const char *QFlatpakPlatformTheme::name = "flatpak";
 
@@ -36,28 +41,43 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 QFlatpakPlatformTheme::QFlatpakPlatformTheme()
     : m_platformTheme(Q_NULLPTR)
 {
-    const QString realPlatformTheme = qgetenv("QT_FLATPAK_REAL_PLATFORM_THEME");
+    QList<QString> gtkBasedEnvironments = { QLatin1String("GNOME"), QLatin1String("X-CINNAMON"), QLatin1String("UNITY"),
+                                            QLatin1String("MATE"), QLatin1String("XFCE"), QLatin1String("LXDE")
+                                          };
+    const QString platformTheme = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORM_THEME"));
 
-    // TODO: not a nice solution, but the only one working
+    // Try to load first platform theme specified by user
+    if (!platformTheme.isEmpty()) {
+        m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platformTheme, QStringList{platformTheme});
+    }
 
-    if (!realPlatformTheme.isEmpty()) {
-        m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), realPlatformTheme, QStringList{realPlatformTheme});
-    } else {
-        const QString desktopName = qgetenv("XDG_CURRENT_DESKTOP");
-        if (desktopName == QLatin1String("gnome")) {
-            m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("qgnomeplatform"), QStringList{"qgnomeplatform"});
+    // Try to load platform theme based on desktop environment
+    if (!m_platformTheme) {
+        const QString desktopName = QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP"));
+        if (gtkBasedEnvironments.contains(desktopName)) {
+            m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("gnome"), QStringList{"gnome"});
 
-            // prefer the GTK3 theme implementation with native dialogs etc.
             if (!m_platformTheme) {
                 m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("gtk3"), QStringList{"gtk3"});
             }
-            // fallback to the generic Gnome theme if loading the GTK3 theme fails
+
+            // Fallback to QGnomeTheme
             if (!m_platformTheme) {
-                m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("gnome"), QStringList{"gnome"});
+                m_platformTheme = QGenericUnixTheme::createUnixTheme(QLatin1String("gnome"));
             }
         } else if (desktopName == QLatin1String("KDE")) {
             m_platformTheme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), QLatin1String("kde"), QStringList{"kde"});
+
+            // Fallback to QKdeTheme
+            if (!m_platformTheme) {
+                m_platformTheme = QGenericUnixTheme::createUnixTheme(QLatin1String("kde"));
+            }
         }
+    }
+
+    // Fallback to QGenericUnixTheme
+    if (!m_platformTheme) {
+        m_platformTheme = QGenericUnixTheme::createUnixTheme(QLatin1String("generic"));
     }
 
     if (!m_platformTheme) {

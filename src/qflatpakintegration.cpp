@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016 Red Hat, Inc
+ * Copyright © 2016-2017 Red Hat, Inc
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,11 +33,11 @@ QFlatpakIntegration::QFlatpakIntegration(const QStringList &parameters, int &arg
 {
     m_instance = this;
 
-    const QString platformPluginPath = qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH");
-    const QString realPlatformPlugin = qgetenv("QT_FLATPAK_REAL_PLATFORM");
+    const QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
+    const QString platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORM"));
 
-    if (!realPlatformPlugin.isEmpty()) {
-        m_platformIntegration = QPlatformIntegrationFactory::create(realPlatformPlugin, parameters, argc, argv, platformPluginPath);
+    if (!platformPlugin.isEmpty()) {
+        m_platformIntegration = QPlatformIntegrationFactory::create(platformPlugin, parameters, argc, argv, platformPluginPath);
     } else {
         // Load xcb platform plugin by default
         m_platformIntegration = QPlatformIntegrationFactory::create(QLatin1String("xcb"), parameters, argc, argv, platformPluginPath);

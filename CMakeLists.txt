@@ -6,7 +6,7 @@ set(QT_MIN_VERSION "5.7.0")
 ################# set KDE specific information #################
 
 find_package(ECM 1.3.0 REQUIRED NO_MODULE)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
@@ -21,6 +21,21 @@ find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     DBus
     Widgets
 )
+
+if(Qt5Core_VERSION VERSION_LESS "5.8.0")
+    find_package(Qt5PlatformSupport REQUIRED)
+else()
+    find_package(Qt5ThemeSupport REQUIRED)
+endif()
+
+if(Qt5Core_VERSION VERSION_LESS "5.8.0")
+    add_definitions(-DQ_FONTCONFIGDATABASE)
+    set(QT5PLATFORMSUPPORT_LIBS Qt5PlatformSupport::Qt5PlatformSupport)
+else()
+    set(QT5PLATFORMSUPPORT_LIBS
+        Qt5ThemeSupport::Qt5ThemeSupport
+)
+endif()
 
 add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0 -DQT_NO_KEYWORDS)
 add_definitions(-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
