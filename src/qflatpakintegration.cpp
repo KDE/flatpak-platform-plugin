@@ -41,7 +41,8 @@ QFlatpakIntegration::QFlatpakIntegration(const QStringList &parameters, int &arg
         platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM"));
     }
 
-    if (!platformPlugin.isEmpty()) {
+    // Avoid re-loading of our flatpak plugin if it was forced to be used by setting QT_QPA_PLATFORM=flatpak
+    if (!platformPlugin.isEmpty() && platformPlugin != QLatin1String("flatpak")) {
         m_platformIntegration = QPlatformIntegrationFactory::create(platformPlugin, parameters, argc, argv, platformPluginPath);
     } else {
         // Load xcb platform plugin by default
