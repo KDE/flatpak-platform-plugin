@@ -38,7 +38,10 @@ QFlatpakIntegration::QFlatpakIntegration(const QStringList &parameters, int &arg
     QString platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORM"));
     if (!platformPlugin.isEmpty() && platformPlugin != QLatin1String("flatpak")) {
         m_platformIntegration = QPlatformIntegrationFactory::create(platformPlugin, parameters, argc, argv, platformPluginPath);
-    } else {
+    }
+
+    // Someone also might use non-existing platform plugin in QT_QPA_FLATPAK_PLATFORM
+    if (!m_platformIntegration) {
         // Load xcb platform plugin by default
         m_platformIntegration = QPlatformIntegrationFactory::create(QLatin1String("xcb"), parameters, argc, argv, platformPluginPath);
         // TODO wayland by default when detected
