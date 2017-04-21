@@ -36,12 +36,6 @@ QFlatpakIntegration::QFlatpakIntegration(const QStringList &parameters, int &arg
     const QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
     // Use user defined platform plugin
     QString platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORM"));
-    if (platformPlugin.isEmpty()) {
-        // Use system defined platform plugin
-        platformPlugin = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM"));
-    }
-
-    // Avoid re-loading of our flatpak plugin if it was forced to be used by setting QT_QPA_PLATFORM=flatpak
     if (!platformPlugin.isEmpty() && platformPlugin != QLatin1String("flatpak")) {
         m_platformIntegration = QPlatformIntegrationFactory::create(platformPlugin, parameters, argc, argv, platformPluginPath);
     } else {
