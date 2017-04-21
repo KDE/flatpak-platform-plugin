@@ -87,7 +87,7 @@ QAbstractEventDispatcher *QFlatpakIntegration::createEventDispatcher() const
 
 void QFlatpakIntegration::initialize()
 {
-    return m_platformIntegration->initialize();
+    m_platformIntegration->initialize();
 }
 
 QPlatformFontDatabase *QFlatpakIntegration::fontDatabase() const
