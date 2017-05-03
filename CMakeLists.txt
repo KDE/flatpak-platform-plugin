@@ -33,11 +33,10 @@ if(Qt5Core_VERSION VERSION_LESS "5.8.0")
     set(QT5PLATFORMSUPPORT_LIBS Qt5PlatformSupport::Qt5PlatformSupport)
 else()
     set(QT5PLATFORMSUPPORT_LIBS
-        Qt5ThemeSupport::Qt5ThemeSupport
-)
+        Qt5ThemeSupport::Qt5ThemeSupport)
 endif()
 
-add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0 -DQT_NO_KEYWORDS)
+add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0)
 add_definitions(-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 remove_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_STRICT_ITERATORS -DQT_NO_CAST_FROM_BYTEARRAY)
 

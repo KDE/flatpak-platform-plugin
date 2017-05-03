@@ -38,6 +38,8 @@ public:
     QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const Q_DECL_OVERRIDE;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
+    QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
+
 #ifndef QT_NO_SYSTEMTRAYICON
     virtual QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const;
 #endif

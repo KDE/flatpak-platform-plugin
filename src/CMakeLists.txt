@@ -3,6 +3,9 @@ include_directories(
     ${Qt5Core_PRIVATE_INCLUDE_DIRS}
     ${Qt5ThemeSupport_INCLUDE_DIRS}
     ${Qt5PlatformSupport_INCLUDE_DIRS}
+    # needed for qdbustrayicon_p.h
+    ${Qt5ThemeSupport_INCLUDE_DIRS}/QtThemeSupport
+    ${Qt5PlatformSupport_INCLUDE_DIRS}/QtPlatformSupport
 )
 
 set(qflatpak_platform_plugin_SRCS
