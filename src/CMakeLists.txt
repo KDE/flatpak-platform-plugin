@@ -3,6 +3,8 @@ include_directories(
     ${Qt5Core_PRIVATE_INCLUDE_DIRS}
     ${Qt5ThemeSupport_INCLUDE_DIRS}
     ${Qt5PlatformSupport_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
+    ${Qt5Widgets_PRIVATE_INCLUDE_DIRS}
     # needed for qdbustrayicon_p.h
     ${Qt5ThemeSupport_INCLUDE_DIRS}/QtThemeSupport
     ${Qt5PlatformSupport_INCLUDE_DIRS}/QtPlatformSupport
@@ -14,6 +16,8 @@ set(qflatpak_platform_plugin_SRCS
     qflatpakmain.cpp
     qflatpakplatformtheme.cpp
     qflatpakservices.cpp
+    qflatpaksystemtrayicon.cpp
+    qsystemtrayicon.cpp
 )
 
 add_library(libqflatpakplatform MODULE ${qflatpak_platform_plugin_SRCS})
@@ -23,6 +27,7 @@ target_link_libraries(libqflatpakplatform
         Qt5::Core
         Qt5::DBus
         Qt5::Gui
+        Qt5::Widgets
         ${QT5PLATFORMSUPPORT_LIBS}
 )
 

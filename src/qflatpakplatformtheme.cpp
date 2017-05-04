@@ -20,6 +20,7 @@
 
 #include "qflatpakplatformtheme.h"
 #include "qflatpakfiledialog.h"
+#include "qflatpaksystemtrayicon.h"
 
 #include <QDebug>
 #include <qpa/qplatformtheme.h>
@@ -36,11 +37,11 @@
 #include <QMimeType>
 
 #ifndef QT_NO_DBUS
-#include "private/qdbusplatformmenu_p.h"
-#include "private/qdbusmenubar_p.h"
+#include <private/qdbusplatformmenu_p.h>
+#include <private/qdbusmenubar_p.h>
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-#include "private/qdbustrayicon_p.h"
+#include <private/qdbustrayicon_p.h>
 #endif
 
 const char *QFlatpakPlatformTheme::name = "flatpak";
@@ -165,6 +166,10 @@ QPlatformSystemTrayIcon * QFlatpakPlatformTheme::createPlatformSystemTrayIcon() 
     // platform plugin and it cannot be casted to xcb
     if (!trayIcon && isDBusTrayAvailable()) {
         return new QDBusTrayIcon();
+    }
+
+    if (!trayIcon) {
+        return new QFlatpakSystemTrayIcon();
     }
 
     return trayIcon;

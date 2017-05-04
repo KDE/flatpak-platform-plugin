@@ -69,6 +69,7 @@ public:
 
     static QFlatpakIntegration *instance() { return m_instance; }
 
+    const QPlatformIntegration *loadedPlatformPlugin() { return m_platformIntegration; }
 private:
     static QFlatpakIntegration *m_instance;
 
