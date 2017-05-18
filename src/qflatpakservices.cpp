@@ -35,24 +35,52 @@ bool QFlatpakServices::openUrl(const QUrl &url)
 {
     qCDebug(QFlatpakPlatformServices) << "Open url: " << url;
 
-    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
-                                                          QLatin1String("/org/freedesktop/portal/desktop"),
-                                                          QLatin1String("org.freedesktop.portal.OpenURI"),
-                                                          QLatin1String("OpenURI"));
+    if (url.scheme() == QLatin1String("mailto")) {
+        QUrlQuery urlQuery(url);
+        QVariantMap options;
+        options.insert(QLatin1String("address"), url.path());
+        options.insert(QLatin1String("subject"), urlQuery.queryItemValue(QLatin1String("subject")));
+        options.insert(QLatin1String("body"), urlQuery.queryItemValue(QLatin1String("body")));
+        // TODO attachements
 
-    // TODO get parent window id??
-    QString parentWindowId = QLatin1String("x11:")/* + QString::number(parent->winId())*/;
-    QVariantMap options; // TODO: handle "writable" option
+        QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                                              QLatin1String("/org/freedesktop/portal/desktop"),
+                                                              QLatin1String("org.freedesktop.portal.Email"),
+                                                              QLatin1String("ComposeEmail"));
 
-    message << parentWindowId << url.toDisplayString() << options;
+        // TODO get parent window id??
+        QString parentWindowId = QLatin1String("x11:")/* + QString::number(parent->winId())*/;
 
-    QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
-    watcher->waitForFinished(); // TODO sorry for a blocking call, but we cannot do it asynchronous here
-    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
-    if (reply.isError()) {
-        qCDebug(QFlatpakPlatformServices) << "Couldn't get reply";
-        return false;
+        message << parentWindowId << options;
+
+        QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
+        watcher->waitForFinished(); // TODO sorry for a blocking call, but we cannot do it asynchronous here
+        QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+        if (reply.isError()) {
+            qCDebug(QFlatpakPlatformServices) << "Couldn't get reply";
+            return false;
+        }
+    } else {
+        QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                                              QLatin1String("/org/freedesktop/portal/desktop"),
+                                                              QLatin1String("org.freedesktop.portal.OpenURI"),
+                                                              QLatin1String("OpenURI"));
+
+        // TODO get parent window id??
+        QString parentWindowId = QLatin1String("x11:")/* + QString::number(parent->winId())*/;
+        QVariantMap options; // TODO: handle "writable" option
+
+        message << parentWindowId << url.toDisplayString() << options;
+
+        QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
+        watcher->waitForFinished(); // TODO sorry for a blocking call, but we cannot do it asynchronous here
+        QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+        if (reply.isError()) {
+            qCDebug(QFlatpakPlatformServices) << "Couldn't get reply";
+            return false;
+        }
     }
 
     return true;

@@ -26,6 +26,8 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformintegrationfactory_p.h>
 
+#include <QDebug>
+
 QFlatpakIntegration *QFlatpakIntegration::m_instance = Q_NULLPTR;
 
 QFlatpakIntegration::QFlatpakIntegration(const QStringList &parameters, int &argc, char ** argv)
