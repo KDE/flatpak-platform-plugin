@@ -10,19 +10,15 @@ include_directories(
     ${Qt5PlatformSupport_INCLUDE_DIRS}/QtPlatformSupport
 )
 
-set(qflatpak_platform_plugin_SRCS
-    qflatpakintegration.cpp
+set(qflatpak_platform_theme_SRCS
     qflatpakfiledialog.cpp
-    qflatpakmain.cpp
     qflatpakplatformtheme.cpp
-    qflatpakservices.cpp
-    qflatpaksystemtrayicon.cpp
-    qsystemtrayicon.cpp
+    qflatpakplatformthemeplugin.cpp
 )
 
-add_library(libqflatpakplatform MODULE ${qflatpak_platform_plugin_SRCS})
+add_library(qflatpakplatformtheme MODULE ${qflatpak_platform_theme_SRCS})
 
-target_link_libraries(libqflatpakplatform
+target_link_libraries(qflatpakplatformtheme
     PRIVATE
         Qt5::Core
         Qt5::DBus
@@ -31,4 +27,22 @@ target_link_libraries(libqflatpakplatform
         ${QT5PLATFORMSUPPORT_LIBS}
 )
 
-install(TARGETS libqflatpakplatform DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/platforms)
+install(TARGETS qflatpakplatformtheme DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/platformthemes)
+
+set(qflatpak_platform_services_SRCS
+    qflatpakplatformservices.cpp
+    qflatpakplatformservicesplugin.cpp
+)
+
+add_library(qflatpakplatservices MODULE ${qflatpak_platform_services_SRCS})
+
+target_link_libraries(qflatpakplatservices
+    PRIVATE
+        Qt5::Core
+        Qt5::DBus
+        Qt5::Gui
+        Qt5::Widgets
+        ${QT5PLATFORMSUPPORT_LIBS}
+)
+
+install(TARGETS qflatpakplatservices DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/platformservices)

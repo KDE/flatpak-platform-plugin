@@ -18,24 +18,18 @@
  *       Jan Grulich <jgrulich@redhat.com>
  */
 
-#include <qpa/qplatformintegrationplugin.h>
+#ifndef QFLATPAK_PLATFORM_SERVICES_H
+#define QFLATPAK_PLATFORM_SERVICES_H
 
-#include "qflatpakintegration.h"
+#include <QUrl>
+#include <qpa/qplatformservices.h>
 
-class QFlatpakIntegrationPlugin : public QPlatformIntegrationPlugin
+class QFlatpakPlatformServices : public QPlatformServices
 {
-   Q_OBJECT
-   Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "qflatpakplatform.json")
 public:
-    QPlatformIntegration *create(const QString&, const QStringList&, int &, char **) Q_DECL_OVERRIDE;
+    bool openUrl(const QUrl &url);
+    bool openDocument(const QUrl &url);
+
 };
 
-QPlatformIntegration* QFlatpakIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)
-{
-    if (!system.compare(QLatin1String("flatpak"), Qt::CaseInsensitive))
-        return new QFlatpakIntegration(parameters, argc, argv);
-
-    return 0;
-}
-
-#include "qflatpakmain.moc"
+#endif // QFLATPAK_PLATFORM_SERVICES_H

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016 Red Hat, Inc
+ * Copyright © 2017 Red Hat, Inc
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,18 +18,20 @@
  *       Jan Grulich <jgrulich@redhat.com>
  */
 
-#ifndef QFLATPAK_SERVICES_H
-#define QFLATPAK_SERVICES_H
+#ifndef QFLATPAK_PLATFORM_SERVICES_PLUGIN_H
+#define QFLATPAK_PLATFORM_SERVICES_PLUGIN_H
 
-#include <QUrl>
 #include <qpa/qplatformservices.h>
+#include <qpa/qplatformservicesplugin.h>
 
-class QFlatpakServices : public QPlatformServices
-{
+class QFlatpakPlatformServicesPlugin : public QPlatformServicesPlugin {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformServicesFactoryInterface.5.1" FILE "qflatpakplatformservices.json")
 public:
-    bool openUrl(const QUrl &url);
-    bool openDocument(const QUrl &url);
+    QFlatpakPlatformServicesPlugin(QObject *parent = 0);
 
+    virtual QPlatformServices *create(const QString &key, const QStringList &paramList);
 };
 
-#endif // QFLATPAK_SERVICES_H
+#endif // QFLATPAK_PLATFORM_SERVICES_PLUGIN_H
+

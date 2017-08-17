@@ -18,7 +18,7 @@
  *       Jan Grulich <jgrulich@redhat.com>
  */
 
-#include "qflatpakservices.h"
+#include "qflatpakplatformservices.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>
@@ -29,12 +29,8 @@
 #include <QVariantMap>
 #include <QUrl>
 
-Q_LOGGING_CATEGORY(QFlatpakPlatformServices, "qt.qpa.qflatpakplatform.Services")
-
-bool QFlatpakServices::openUrl(const QUrl &url)
+bool QFlatpakPlatformServices::openUrl(const QUrl &url)
 {
-    qCDebug(QFlatpakPlatformServices) << "Open url: " << url;
-
     if (url.scheme() == QLatin1String("mailto")) {
         QUrlQuery urlQuery(url);
         QVariantMap options;
@@ -58,7 +54,6 @@ bool QFlatpakServices::openUrl(const QUrl &url)
         watcher->waitForFinished(); // TODO sorry for a blocking call, but we cannot do it asynchronous here
         QDBusPendingReply<QDBusObjectPath> reply = *watcher;
         if (reply.isError()) {
-            qCDebug(QFlatpakPlatformServices) << "Couldn't get reply";
             return false;
         }
     } else {
@@ -78,7 +73,6 @@ bool QFlatpakServices::openUrl(const QUrl &url)
         watcher->waitForFinished(); // TODO sorry for a blocking call, but we cannot do it asynchronous here
         QDBusPendingReply<QDBusObjectPath> reply = *watcher;
         if (reply.isError()) {
-            qCDebug(QFlatpakPlatformServices) << "Couldn't get reply";
             return false;
         }
     }
@@ -86,7 +80,7 @@ bool QFlatpakServices::openUrl(const QUrl &url)
     return true;
 }
 
-bool QFlatpakServices::openDocument(const QUrl &url)
+bool QFlatpakPlatformServices::openDocument(const QUrl &url)
 {
     return QPlatformServices::openDocument(url);
 }

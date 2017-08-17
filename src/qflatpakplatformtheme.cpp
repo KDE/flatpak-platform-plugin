@@ -36,14 +36,6 @@
 #include <QMimeDatabase>
 #include <QMimeType>
 
-#ifndef QT_NO_DBUS
-#include <private/qdbusplatformmenu_p.h>
-#include <private/qdbusmenubar_p.h>
-#endif
-#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-#include <private/qdbustrayicon_p.h>
-#endif
-
 const char *QFlatpakPlatformTheme::name = "flatpak";
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
@@ -142,37 +134,9 @@ QPlatformMenuBar * QFlatpakPlatformTheme::createPlatformMenuBar() const
 }
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-static bool isDBusTrayAvailable() {
-    static bool dbusTrayAvailable = false;
-    static bool dbusTrayAvailableKnown = false;
-    if (!dbusTrayAvailableKnown) {
-        QDBusMenuConnection conn;
-        if (conn.isStatusNotifierHostRegistered())
-            dbusTrayAvailable = true;
-        dbusTrayAvailableKnown = true;
-    }
-    return dbusTrayAvailable;
-}
-#endif
-
-#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 QPlatformSystemTrayIcon * QFlatpakPlatformTheme::createPlatformSystemTrayIcon() const
 {
-    QPlatformSystemTrayIcon *trayIcon = m_platformTheme->createPlatformSystemTrayIcon();
-    // Fallback for platform themes not providing any system tray icon, in that case it will
-    // try to use xembed and crash, because it assumes that xcb platform plugin will be used
-    // in QGuiApplication::platformPlugin and try to cast it to XcbIntegration so it can call
-    // check whether it supports transparency for background, but fails because we use flatpak
-    // platform plugin and it cannot be casted to xcb
-    if (!trayIcon && isDBusTrayAvailable()) {
-        return new QDBusTrayIcon();
-    }
-
-    if (!trayIcon) {
-        return new QFlatpakSystemTrayIcon();
-    }
-
-    return trayIcon;
+    return m_platformTheme->createPlatformSystemTrayIcon();
 }
 #endif
 
