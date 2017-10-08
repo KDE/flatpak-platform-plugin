@@ -5,7 +5,8 @@ A Qt platform plugin for [xdg-desktop-portal](http://github.com/flatpak/xdg-desk
 This plugin implements only desktop portals for flatpak, while leaving other implementation
 to plugins provided by Qt itself. To specify Qt platform plugin set QT_QPA_FLATPAK_PLATFORM
 variable (e.g. QT_QPA_FLATPAK_PLATFORM="xcb"), if you don't specify this variable then "xcb"
-platform plugin will be used by default. If you want to specify Qt platform theme, you need to
+platform plugin will be used by default. On a Wayland system the "wayland" platform plugin
+will be used by default. If you want to specify Qt platform theme, you need to
 set QT_QPA_FLATPAK_PLATFORMTHEME variable (e.g. QT_QPA_FLATPAK_PLATFORMTHEME="kde"), if you
 don't specify this variable then Qt platform theme will be chosen according to your current desktop.
 
