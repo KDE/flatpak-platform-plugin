@@ -43,12 +43,15 @@ QFlatpakIntegration::QFlatpakIntegration(const QStringList &parameters, int &arg
     // Someone also might use non-existing platform plugin in QT_QPA_FLATPAK_PLATFORM
     if (!m_platformIntegration && qEnvironmentVariableIsSet("WAYLAND_DISPLAY")) {
         // Load wayland platform plugin by default if on a Wayland compositor
-        m_platformIntegration = QPlatformIntegrationFactory::create(QLatin1String("wayland"), parameters, argc, argv, platformPluginPath);
+        platformPlugin = QStringLiteral("wayland");
+        m_platformIntegration = QPlatformIntegrationFactory::create(platformPlugin, parameters, argc, argv, platformPluginPath);
     }
     if (!m_platformIntegration) {
         // Load xcb platform plugin by default
-        m_platformIntegration = QPlatformIntegrationFactory::create(QLatin1String("xcb"), parameters, argc, argv, platformPluginPath);
+        platformPlugin = QStringLiteral("xcb");
+        m_platformIntegration = QPlatformIntegrationFactory::create(platformPlugin, parameters, argc, argv, platformPluginPath);
     }
+    qputenv("QT_QPA_FLATPAK_PLATFORM", platformPlugin.toUtf8());
 }
 
 QFlatpakIntegration::~QFlatpakIntegration()
