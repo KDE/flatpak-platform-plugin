@@ -279,8 +279,9 @@ void QFlatpakFileDialog::exec()
     connect(watcher, &QDBusPendingCallWatcher::finished, [this] (QDBusPendingCallWatcher *watcher) {
         QDBusPendingReply<QDBusObjectPath> reply = *watcher;
         if (reply.isError()) {
-            qCDebug(QFlatpakPlatformFileDialog) << "Couldn't get reply";
-            qCDebug(QFlatpakPlatformFileDialog) << "Error: " << reply.error().message();
+            qCCritical(QFlatpakPlatformFileDialog) << "Couldn't get reply";
+            qCCritical(QFlatpakPlatformFileDialog) << "Error: " << reply.error().message();
+            Q_EMIT reject();
         } else {
             QDBusConnection::sessionBus().connect(QString(),
                                                   reply.value().path(),
