@@ -20,7 +20,6 @@
 
 #include "qflatpakplatformtheme.h"
 #include "qflatpakfiledialog.h"
-#include "qflatpaksystemtrayicon.h"
 
 #include <QDebug>
 #include <qpa/qplatformtheme.h>
