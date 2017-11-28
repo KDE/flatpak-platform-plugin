@@ -46,7 +46,7 @@ QFlatpakPlatformTheme::QFlatpakPlatformTheme()
     QList<QString> gtkBasedEnvironments = { QLatin1String("GNOME"), QLatin1String("X-CINNAMON"), QLatin1String("UNITY"),
                                             QLatin1String("MATE"), QLatin1String("XFCE"), QLatin1String("LXDE")
                                           };
-    const QString platformTheme = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORM_THEME"));
+    const QString platformTheme = QString::fromLocal8Bit(qgetenv("QT_QPA_FLATPAK_PLATFORMTHEME"));
 
     // Try to load first platform theme specified by user
     if (!platformTheme.isEmpty()) {
